@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Fee Collection</title>
+  <style>
+    <body> { font-family: Arial, sans-serif; margin: 20px; background: #f4f6f9; }
+
+    .container {
+     max-width: 700px; margin: auto; background: white; padding: 20px; border-radius: 8px;
+     box-shadow: 0 2px 8px rgba(3,3,3,1);  }
+     h2 { text-align: center; color: #333;  }
+     h3 { text-align: left; color:#333;  }
+
+    form { 
+     display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    input, button { padding: 10px; border: 1px solid #ccc; border-radius: 4px; flex: 1; min-width: 120px; }
+    button { background: #28a745; color: white; border: none; cursor: pointer; font-weight: bold; }
+    button:hover { background: #218838; }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #007bff; color: white; }
+    .paid { color: green; font-weight: bold; }
+    .due { color: red; font-weight: bold; }
+    .action-btn { background: #007bff; padding: 5px 10px; font-size: 12px; }
+  </body>
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Student Fee Collection</h2>
+  <h3>Class 10</h3>
+  
+  <form id="feeForm">
+    <input type="text" id="name" placeholder="Student Name" required>
+    <input type="text" id="roll" placeholder="Roll No" required>
+    <input type="number" id="total" placeholder="Total Fee (Rs)" required>
+    <input type="number" id="paid" placeholder="Paid Fee (Rs)" required>
+    <button type="submit">Add Student</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Roll No</th>
+        <th>Name</th>
+        <th>Total</th>
+        <th>Paid</th>
+        <th>Due</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="studentTable"></tbody>
+  </table>
+</div>
+
+<script>
+  let students = JSON.parse(localStorage.getItem('students')) || [];
+
+  function renderTable() {
+    const tbody = document.getElementById('studentTable');
+    tbody.innerHTML = '';
+    students.forEach((s, index) => {
+      const due = s.total - s.paid;
+      const status = due <= 0 ? '<span class="paid">Paid</span>' : '<span class="due">Pending</span>';
+      tbody.innerHTML += `
+        <tr>
+          <td>${s.roll}</td>
+          <td>${s.name}</td>
+          <td>Rs${s.total}</td>
+          <td>Rs${s.paid}</td>
+          <td>Rs${due > 0 ? due : 0}</td>
+          <td>${status}</td>
+          <td>
+            ${due > 0 ? `<button class="action-btn" onclick="payFee(${index})">Pay $${due}</button>` : 'Clear'}
+          </td>
+        </tr>`;
+    });
+    localStorage.setItem('students', JSON.stringify(students));
+  }
+
+  document.getElementById('feeForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('name').value;
+    const roll = document.getElementById('roll').value;
+    const total = parseFloat(document.getElementById('total').value);
+    const paid = parseFloat(document.getElementById('paid').value);
+
+    students.push({ name, roll, total, paid });
+    renderTable();
+    e.target.reset();
+  });
+
+  function payFee(index) {
+    students[index].paid = students[index].total;
+    renderTable();
+  }
+
+  renderTable();
+</script>
+
+</body>
+</html>
